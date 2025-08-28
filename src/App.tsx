@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { IntroVideo } from './components/IntroVideo';
+import { ForensicLogger } from './components/ForensicLogger';
 import { 
   Usb, 
   Shield, 
@@ -19,6 +21,8 @@ import {
   Database,
   Eye,
   RefreshCw
+  Archive,
+  Video
 } from 'lucide-react';
 
 interface USBDevice {
@@ -32,6 +36,8 @@ interface USBDevice {
 }
 
 function App() {
+  const [showIntro, setShowIntro] = useState(true);
+  const [showForensicLogger, setShowForensicLogger] = useState(false);
   const [activeTab, setActiveTab] = useState('devices');
   const [selectedDevice, setSelectedDevice] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
@@ -66,6 +72,10 @@ function App() {
     setCurrentOperation(action);
   };
 
+  const handleIntroComplete = () => {
+    setShowIntro(false);
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'connected': return 'text-green-400';
@@ -87,6 +97,10 @@ function App() {
   };
 
   return (
+    <>
+      {showIntro && <IntroVideo onComplete={handleIntroComplete} />}
+      <ForensicLogger isVisible={showForensicLogger} onClose={() => setShowForensicLogger(false)} />
+      
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black text-white">
       {/* Header */}
       <div className="relative border-b border-green-400/20 bg-black/50 backdrop-blur-sm">
@@ -99,6 +113,22 @@ function App() {
           <p className="text-center text-gray-400 mt-2 text-sm tracking-wide">
             Advanced USB Management & Security Suite
           </p>
+          <div className="flex justify-center mt-4 gap-4">
+            <button
+              onClick={() => setShowForensicLogger(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/50 rounded-lg text-cyan-400 hover:from-cyan-500/30 hover:to-blue-500/30 transition-all duration-300"
+            >
+              <Archive className="w-4 h-4" />
+              Registro Forense
+            </button>
+            <button
+              onClick={() => setShowIntro(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/50 rounded-lg text-purple-400 hover:from-purple-500/30 hover:to-pink-500/30 transition-all duration-300"
+            >
+              <Video className="w-4 h-4" />
+              Ver Intro
+            </button>
+          </div>
         </div>
       </div>
 
@@ -732,6 +762,7 @@ function App() {
         </div>
       </div>
     </div>
+    </>
   );
 }
 
