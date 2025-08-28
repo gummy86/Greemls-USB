@@ -143,6 +143,7 @@ function App() {
               { id: 'tools', icon: Wrench, label: 'USB Tools' },
               { id: 'encrypt', icon: Shield, label: 'Encryption' },
               { id: 'integrity', icon: FileCheck, label: 'Integrity Check' },
+              { id: 'about', icon: Eye, label: 'About Greemls' },
               { id: 'settings', icon: Settings, label: 'Settings' }
             ].map(item => (
               <button
