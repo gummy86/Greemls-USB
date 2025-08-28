@@ -20,7 +20,7 @@ import {
   Wrench,
   Database,
   Eye,
-  RefreshCw
+  RefreshCw,
   Archive,
   Video
 } from 'lucide-react';
