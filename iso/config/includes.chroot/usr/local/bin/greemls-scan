@@ -49,6 +49,10 @@ fi
 
 # YARA scan (if rules present)
 YARA_DIR="/opt/greemls/yara"
+USB_YARA_DIR=$(find /media -maxdepth 2 -type d -iname YARA 2>/dev/null | head -n1 || true)
+if [[ -d "$USB_YARA_DIR" ]]; then
+  YARA_DIR="$USB_YARA_DIR"
+fi
 if command -v yara >/dev/null 2>&1 && [[ -d "$YARA_DIR" ]]; then
   find / -xdev -type f -size -20M 2>/dev/null | head -n 5000 > "$TMPDIR/filelist.txt" || true
   xargs -a "$TMPDIR/filelist.txt" -r -n 1000 sh -c 'yara -p 4 -f -r "$0" "$@"' "$YARA_DIR" 2>/dev/null | tee "$TMPDIR/yara.txt" || true

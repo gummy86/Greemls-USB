@@ -24,6 +24,7 @@ import {
   Archive,
   Video
 } from 'lucide-react';
+import { ISOHashVerifier } from './components/ISOHashVerifier';
 
 interface USBDevice {
   id: string;
@@ -350,6 +351,11 @@ function App() {
                     </div>
                   </div>
                   <div className="space-y-4">
+                    {/* Verify ISO SHA256 */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">Verify ISO (SHA256)</label>
+                      <ISOHashVerifier />
+                    </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">Partition Scheme</label>
                       <select className="w-full px-4 py-3 bg-gray-800/50 border border-gray-600/50 rounded-lg text-white focus:border-green-400/50 focus:outline-none"

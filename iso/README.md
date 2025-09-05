@@ -21,6 +21,15 @@ make build
   - `greemls-clean`: ejemplo de cuarentena
   - `greemls-export`: exporta reportes al USB montado en `/media/...`
 
+## Reglas YARA personalizadas
+- Reglas base se incluyen en `/opt/greemls/yara/` dentro de la ISO.
+- Puedes añadir reglas propias copiándolas a un USB en `YARA/` y, al arrancar, montarlas en `/mnt/usb` y ejecutar:
+  ```bash
+  sudo mkdir -p /opt/greemls/yara-custom && sudo cp -v /mnt/usb/YARA/*.yar /opt/greemls/yara-custom/
+  sudo yara -r /opt/greemls/yara-custom / -p 4 -f
+  ```
+  También puedes editar `greemls-scan` para que busque automáticamente en `/media/*/YARA`.
+
 ## Uso
 1. Construye la ISO
 2. Copia la ISO a un USB con Ventoy o Rufus
