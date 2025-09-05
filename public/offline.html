@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GREEMLS - Offline</title>
+    <meta name="robots" content="noindex" />
+    <style>
+      html, body { height: 100%; margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial; background:#000; color:#e5e7eb; }
+      .wrap { min-height: 100%; display: flex; align-items: center; justify-content: center; padding: 24px; }
+      .card { width: 100%; max-width: 560px; background: rgba(17,24,39,.8); border: 1px solid rgba(16,185,129,.4); border-radius: 16px; padding: 24px; box-shadow: 0 20px 60px rgba(0,255,65,.15); }
+      .title { color:#34d399; font-weight: 800; font-size: 20px; margin: 0 0 8px; }
+      .muted { color:#9ca3af; font-size:14px; margin: 0 0 16px; }
+      .tips { color:#e5e7eb; font-size:14px; margin: 0; padding-left: 18px; }
+      .btns { margin-top: 16px; display:flex; gap:12px; flex-wrap:wrap; }
+      .btn { background: rgba(16,185,129,.15); border:1px solid rgba(16,185,129,.45); color:#34d399; padding:8px 12px; border-radius:10px; text-decoration:none; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="card">
+        <h1 class="title">Sin conexión</h1>
+        <p class="muted">No pudimos cargar la página. Algunas funciones están disponibles offline.</p>
+        <ul class="tips">
+          <li>Vuelve al inicio para usar funciones en caché</li>
+          <li>Importa reportes forenses desde tu USB</li>
+          <li>Reintenta cuando recuperes la conexión</li>
+        </ul>
+        <div class="btns">
+          <a class="btn" href="/">Ir al inicio</a>
+        </div>
+      </div>
+    </div>
+  </body>
+  </html>
+

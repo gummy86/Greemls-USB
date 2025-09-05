@@ -16,7 +16,10 @@ if ('serviceWorker' in navigator) {
   const workbox = new Workbox(swUrl);
 
   workbox.addEventListener('waiting', () => {
-    workbox.messageSW({ type: 'SKIP_WAITING' });
+    const shouldUpdate = window.confirm('Nueva versión disponible. ¿Actualizar ahora?');
+    if (shouldUpdate) {
+      workbox.messageSW({ type: 'SKIP_WAITING' });
+    }
   });
 
   workbox.addEventListener('controlling', () => {
