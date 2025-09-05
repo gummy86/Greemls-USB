@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { IntroVideo } from './components/IntroVideo';
+import { TerminalIntro } from './components/TerminalIntro';
 import { ForensicLogger } from './components/ForensicLogger';
 import { 
   Usb, 
@@ -36,7 +36,7 @@ interface USBDevice {
 }
 
 function App() {
-  const [showIntro, setShowIntro] = useState(true);
+  const [showTerminalIntro, setShowTerminalIntro] = useState(true);
   const [showForensicLogger, setShowForensicLogger] = useState(false);
   const [activeTab, setActiveTab] = useState('devices');
   const [selectedDevice, setSelectedDevice] = useState<string | null>(null);
@@ -98,35 +98,56 @@ function App() {
 
   return (
     <>
-      {showIntro && <IntroVideo onComplete={handleIntroComplete} />}
+      {showTerminalIntro && <TerminalIntro onComplete={handleTerminalIntroComplete} userPlan={userPlan} />}
       <ForensicLogger isVisible={showForensicLogger} onClose={() => setShowForensicLogger(false)} />
       
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black text-white">
       {/* Header */}
-      <div className="relative border-b border-green-400/20 bg-black/50 backdrop-blur-sm">
-        <div className="absolute inset-0 bg-gradient-to-r from-green-400/5 to-orange-400/5"></div>
-        <div className="relative px-8 py-6">
-          <h1 className="text-5xl font-bold text-center bg-gradient-to-r from-green-400 via-green-300 to-orange-400 bg-clip-text text-transparent tracking-wider" 
-              style={{ fontFamily: 'serif', textShadow: '0 0 30px #00ff41' }}>
+      <div className="relative border-b border-green-400/20 bg-black/80 backdrop-blur-sm"
+           style={{ 
+             boxShadow: '0 4px 20px rgba(255, 255, 255, 0.1), 0 8px 32px rgba(0, 255, 65, 0.15)',
+             backdropFilter: 'blur(10px)'
+           }}>
+        <div className="absolute inset-0 bg-gradient-to-r from-green-400/10 to-orange-400/10"></div>
+        <div className="relative px-8 py-8">
+          <h1 className="text-6xl font-bold text-center bg-gradient-to-r from-green-400 via-green-300 to-orange-400 bg-clip-text text-transparent tracking-wider mb-2" 
+              style={{ 
+                fontFamily: 'serif', 
+                textShadow: '0 0 30px #00ff41',
+                filter: 'drop-shadow(0 4px 8px rgba(255, 255, 255, 0.2))'
+              }}>
             ⚡ GREEMLS ⚡
           </h1>
-          <p className="text-center text-gray-400 mt-2 text-sm tracking-wide">
-            Advanced USB Management & Security Suite
+          <p className="text-center text-green-300 text-lg tracking-wide font-semibold mb-1"
+             style={{ filter: 'drop-shadow(0 2px 4px rgba(255, 255, 255, 0.1))' }}>
+            The Human Immunity
           </p>
-          <div className="flex justify-center mt-4 gap-4">
+          <p className="text-center text-orange-400 text-sm tracking-wide"
+             style={{ filter: 'drop-shadow(0 2px 4px rgba(255, 255, 255, 0.1))' }}>
+            By César Sánchez - Antivirus Humano
+          </p>
+          <div className="flex justify-center mt-6 gap-4">
             <button
               onClick={() => setShowForensicLogger(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/50 rounded-lg text-cyan-400 hover:from-cyan-500/30 hover:to-blue-500/30 transition-all duration-300"
+              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/50 rounded-lg text-cyan-400 hover:from-cyan-500/30 hover:to-blue-500/30 transition-all duration-300 transform hover:scale-105"
+              style={{ 
+                boxShadow: '0 4px 15px rgba(255, 255, 255, 0.1), 0 8px 25px rgba(6, 182, 212, 0.2)',
+                backdropFilter: 'blur(5px)'
+              }}
             >
               <Archive className="w-4 h-4" />
               Registro Forense
             </button>
             <button
-              onClick={() => setShowIntro(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/50 rounded-lg text-purple-400 hover:from-purple-500/30 hover:to-pink-500/30 transition-all duration-300"
+              onClick={() => setShowTerminalIntro(true)}
+              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/50 rounded-lg text-purple-400 hover:from-purple-500/30 hover:to-pink-500/30 transition-all duration-300 transform hover:scale-105"
+              style={{ 
+                boxShadow: '0 4px 15px rgba(255, 255, 255, 0.1), 0 8px 25px rgba(168, 85, 247, 0.2)',
+                backdropFilter: 'blur(5px)'
+              }}
             >
-              <Video className="w-4 h-4" />
-              Ver Intro
+              <Terminal className="w-4 h-4" />
+              Ver Terminal
             </button>
           </div>
         </div>
@@ -151,13 +172,14 @@ function App() {
                 onClick={() => setActiveTab(item.id)}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300 transform hover:scale-105 ${
                   activeTab === item.id
-                    ? 'bg-gradient-to-r from-green-400/20 to-orange-400/20 border border-green-400/50 shadow-lg shadow-green-400/25'
-                    : 'bg-gray-800/30 hover:bg-gray-700/30 border border-gray-700/50'
+                    ? 'bg-gradient-to-r from-green-400/20 to-orange-400/20 border border-green-400/50'
+                    : 'bg-gray-800/40 hover:bg-gray-700/40 border border-gray-700/50'
                 }`}
                 style={{ 
                   boxShadow: activeTab === item.id ? 
-                    '0 0 20px rgba(0, 255, 65, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)' : 
-                    '0 4px 15px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
+                    '0 4px 15px rgba(255, 255, 255, 0.1), 0 8px 25px rgba(0, 255, 65, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)' : 
+                    '0 4px 15px rgba(255, 255, 255, 0.05), 0 8px 20px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
+                  backdropFilter: 'blur(5px)'
                 }}
               >
                 <item.icon className={`w-5 h-5 ${activeTab === item.id ? 'text-green-400' : 'text-gray-400'}`} />
