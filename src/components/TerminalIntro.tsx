@@ -3,10 +3,9 @@ import { Terminal, SkipForward } from 'lucide-react';
 
 interface TerminalIntroProps {
   onComplete: () => void;
-  userPlan: 'free' | 'premium' | 'premium-plus';
 }
 
-export const TerminalIntro: React.FC<TerminalIntroProps> = ({ onComplete, userPlan }) => {
+export const TerminalIntro: React.FC<TerminalIntroProps> = ({ onComplete }) => {
   const [currentLine, setCurrentLine] = useState(0);
   const [currentChar, setCurrentChar] = useState(0);
   const [displayedText, setDisplayedText] = useState<string[]>([]);
@@ -45,16 +44,6 @@ export const TerminalIntro: React.FC<TerminalIntroProps> = ({ onComplete, userPl
     "   • 'Revisa su comportamiento' - Estudia cómo actúa el malware",
     "   • 'Revisa tu teléfono celular' - El malware es multiplataforma",
     "   • 'Donde pones contraseña, nunca la pongas doble vez'",
-    "",
-    userPlan === 'free' ? "PLAN ACTUAL: GRATIS (Funciones básicas)" : 
-    userPlan === 'premium' ? "PLAN ACTUAL: PREMIUM (Kernel hardened + BusyBox)" :
-    "PLAN ACTUAL: PREMIUM PLUS (RAM logging + Forense completo)",
-    "",
-    userPlan === 'free' ? "UPGRADE DISPONIBLE:" : "FUNCIONES PREMIUM ACTIVAS:",
-    userPlan === 'free' ? "• Premium ($29/mes): Kernel hardened, scripts offline" : "• Kernel Linux hardened activado",
-    userPlan === 'free' ? "• Premium Plus ($59/mes): RAM logging, soporte 24/7" : "• BusyBox tools disponibles",
-    userPlan === 'premium-plus' ? "• RAM-only logging activo" : "",
-    userPlan === 'premium-plus' ? "• Modo forense completo" : "",
     "",
     "Presiona ENTER para continuar o ESC para salir...",
     ""
@@ -101,7 +90,7 @@ export const TerminalIntro: React.FC<TerminalIntroProps> = ({ onComplete, userPl
     }
   };
 
-  const canSkip = userPlan !== 'free';
+  const canSkip = true;
 
   return (
     <div 
@@ -123,7 +112,7 @@ export const TerminalIntro: React.FC<TerminalIntroProps> = ({ onComplete, userPl
             className="flex items-center gap-2 px-3 py-1 bg-green-400/20 hover:bg-green-400/30 border border-green-400/50 rounded text-green-400 text-sm transition-all duration-300"
           >
             <SkipForward className="w-3 h-3" />
-            Skip (Premium)
+            Skip
           </button>
         )}
       </div>
@@ -183,11 +172,7 @@ export const TerminalIntro: React.FC<TerminalIntroProps> = ({ onComplete, userPl
               <p className="text-gray-300 text-sm mb-2">
                 Presiona ENTER para acceder a la interfaz gráfica de GREEMLS
               </p>
-              {!canSkip && (
-                <p className="text-yellow-400 text-xs">
-                  💡 Upgrade a Premium para saltar esta intro en el futuro
-                </p>
-              )}
+              
             </div>
           )}
         </div>
@@ -197,7 +182,6 @@ export const TerminalIntro: React.FC<TerminalIntroProps> = ({ onComplete, userPl
       <div className="p-2 bg-gray-900 border-t border-green-400/30 text-center">
         <span className="text-gray-500 text-xs">
           GREEMLS Terminal - Presiona ENTER para continuar | ESC para salir
-          {canSkip && " | Premium: Puedes saltar esta intro"}
         </span>
       </div>
     </div>
