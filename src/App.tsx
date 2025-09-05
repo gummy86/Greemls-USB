@@ -43,6 +43,7 @@ function App() {
   const [progress, setProgress] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentOperation, setCurrentOperation] = useState('');
+  const [userPlan] = useState<'free' | 'premium' | 'premium-plus'>('free');
 
   const [devices] = useState<USBDevice[]>([
     { id: '1', name: 'Kingston DataTraveler', capacity: '32 GB', status: 'connected', health: 98, fileSystem: 'FAT32' },

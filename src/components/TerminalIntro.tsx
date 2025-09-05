@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Terminal, SkipForward } from 'lucide-react';
 
 interface TerminalIntroProps {
@@ -11,6 +11,7 @@ export const TerminalIntro: React.FC<TerminalIntroProps> = ({ onComplete, userPl
   const [currentChar, setCurrentChar] = useState(0);
   const [displayedText, setDisplayedText] = useState<string[]>([]);
   const [showCursor, setShowCursor] = useState(true);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const terminalLines = [
     "GREEMLS v1.0.0 - The Human Immunity System",
@@ -59,6 +60,13 @@ export const TerminalIntro: React.FC<TerminalIntroProps> = ({ onComplete, userPl
   }, []);
 
   useEffect(() => {
+    // Auto focus to capture keyboard events immediately
+    if (containerRef.current) {
+      containerRef.current.focus();
+    }
+  }, []);
+
+  useEffect(() => {
     if (currentLine < terminalLines.length) {
       const line = terminalLines[currentLine];
       
@@ -92,6 +100,7 @@ export const TerminalIntro: React.FC<TerminalIntroProps> = ({ onComplete, userPl
       onKeyDown={handleKeyPress}
       tabIndex={0}
       style={{ fontFamily: 'Consolas, Monaco, "Courier New", monospace' }}
+      ref={containerRef}
     >
       {/* Terminal Header */}
       <div className="flex items-center justify-between p-4 bg-gray-900 border-b border-green-400/30">
