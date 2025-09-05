@@ -72,8 +72,8 @@ function App() {
     setCurrentOperation(action);
   };
 
-  const handleIntroComplete = () => {
-    setShowIntro(false);
+  const handleTerminalIntroComplete = () => {
+    setShowTerminalIntro(false);
   };
 
   const getStatusColor = (status: string) => {
@@ -140,13 +140,13 @@ function App() {
             </button>
             <button
               onClick={() => setShowTerminalIntro(true)}
-              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/50 rounded-lg text-purple-400 hover:from-purple-500/30 hover:to-pink-500/30 transition-all duration-300 transform hover:scale-105"
+              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-500/20 to-orange-500/20 border border-green-400/50 rounded-lg text-green-400 hover:from-green-500/30 hover:to-orange-500/30 transition-all duration-300 transform hover:scale-105"
               style={{ 
-                boxShadow: '0 4px 15px rgba(255, 255, 255, 0.1), 0 8px 25px rgba(168, 85, 247, 0.2)',
+                boxShadow: '0 4px 15px rgba(255, 255, 255, 0.1), 0 8px 25px rgba(0, 255, 65, 0.2)',
                 backdropFilter: 'blur(5px)'
               }}
             >
-              <Terminal className="w-4 h-4" />
+              <Eye className="w-4 h-4" />
               Ver Terminal
             </button>
           </div>
