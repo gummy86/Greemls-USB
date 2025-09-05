@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SRC_DIR="/var/log/greemls"
+DEST="/media/$(ls /media 2>/dev/null | head -n1  || echo USB)/greemls-reports"
+mkdir -p "$DEST"
+
+if [[ ! -d "$SRC_DIR" ]]; then
+  echo "No hay reportes en $SRC_DIR" >&2
+  exit 1
+fi
+
+cp -v "$SRC_DIR"/* "$DEST"/ || true
+echo "[+] Exportado a: $DEST"
+

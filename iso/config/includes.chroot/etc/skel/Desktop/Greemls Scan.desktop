@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=GREEMLS Scan
+Comment=Run forensic scan
+Exec=xfce4-terminal -e "bash -lc 'sudo greemls-scan; read -n1 -p \"Press any key...\"'"
+Icon=utilities-terminal
+Terminal=false
+Type=Application
+Categories=System;Utility;Security;
+

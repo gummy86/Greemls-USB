@@ -376,6 +376,13 @@ function App() {
                   >
                     {isProcessing ? 'Creating...' : 'Create Bootable USB'}
                   </button>
+                  <a
+                    href="/iso/README.md"
+                    className="ml-4 inline-flex items-center text-sm text-gray-300 underline hover:text-green-400"
+                    target="_blank" rel="noreferrer"
+                  >
+                    Instrucciones para construir la ISO GREEMLS
+                  </a>
                 </div>
               </div>
             </div>

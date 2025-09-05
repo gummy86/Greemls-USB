@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "[!] Advertencia: limpieza agresiva puede causar pérdida de datos."
+read -rp "¿Deseas continuar? (yes/NO): " ans
+if [[ "${ans:-}" != "yes" ]]; then
+  echo "Cancelado"
+  exit 1
+fi
+
+# Ejemplo mínimo: mover archivos detectados por ClamAV a cuarentena
+QUAR="$HOME/greemls-quarantine-$(date +%s)"
+mkdir -p "$QUAR"
+grep -R "FOUND$" /var/log -n 2>/dev/null | cut -d: -f1 | while read -r path; do
+  if [[ -f "$path" ]]; then
+    mkdir -p "$QUAR/$(dirname "$path")"
+    mv -f "$path" "$QUAR/$(dirname "$path")/" || true
+  fi
+done
+echo "[+] Cuarentena: $QUAR"
+
