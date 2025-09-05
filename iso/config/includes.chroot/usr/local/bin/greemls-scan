@@ -27,7 +27,9 @@ RESULT_JSON=$(cat <<'JSON'
     "clamav": "enabled",
     "rkhunter": "enabled",
     "chkrootkit": "enabled",
-    "yara": "enabled"
+    "yara": "enabled",
+    "mbr_efi": "enabled",
+    "kernel_modules": "enabled"
   },
   "events": []
 }
@@ -44,6 +46,23 @@ fi
 if command -v chkrootkit >/dev/null 2>&1; then
   chkrootkit > "$TMPDIR/chkrootkit.txt" 2>&1 || true
 fi
+
+# YARA scan (if rules present)
+YARA_DIR="/opt/greemls/yara"
+if command -v yara >/dev/null 2>&1 && [[ -d "$YARA_DIR" ]]; then
+  find / -xdev -type f -size -20M 2>/dev/null | head -n 5000 > "$TMPDIR/filelist.txt" || true
+  xargs -a "$TMPDIR/filelist.txt" -r -n 1000 sh -c 'yara -p 4 -f -r "$0" "$@"' "$YARA_DIR" 2>/dev/null | tee "$TMPDIR/yara.txt" || true
+fi
+
+# MBR/EFI checks (basic heuristics)
+dd if=/dev/sda bs=512 count=1 2>/dev/null | hexdump -C > "$TMPDIR/mbr.hex" || true
+if [[ -d /boot/efi/EFI ]]; then
+  find /boot/efi/EFI -type f -maxdepth 2 -iname "*.efi" -print0 | xargs -0 sha256sum > "$TMPDIR/efi.sha256" || true
+fi
+
+# Kernel modules
+lsmod > "$TMPDIR/lsmod.txt" || true
+modprobe -c > "$TMPDIR/modprobe.conf" 2>/dev/null || true
 
 # Run ClamAV quick scan on mounted volumes
 if command -v clamscan >/dev/null 2>&1; then
@@ -92,6 +111,41 @@ if os.path.exists(cl):
             if line.strip().endswith('FOUND'):
                 path = line.split(':',1)[0]
                 add_event('clamav', 'critical', 'Malware detectado', {"location": path})
+
+# yara
+yr = os.path.join(tmp, 'yara.txt')
+if os.path.exists(yr):
+    with open(yr, 'r', errors='ignore') as f:
+        c = 0
+        for _ in f:
+            c += 1
+        if c:
+            add_event('yara', 'high', f'Reglas YARA coincidencias: {c}', {"matches": c})
+
+# mbr
+mbr = os.path.join(tmp, 'mbr.hex')
+if os.path.exists(mbr):
+    with open(mbr, 'r', errors='ignore') as f:
+        hexdata = f.read()
+    if '55 aa' not in hexdata.lower():
+        add_event('mbr', 'high', 'MBR sin firma boot 0x55AA')
+
+# efi hashes presence
+efi = os.path.join(tmp, 'efi.sha256')
+if os.path.exists(efi):
+    with open(efi, 'r', errors='ignore') as f:
+        lines = [l for l in f if l.strip()]
+    if not lines:
+        add_event('efi', 'medium', 'No se encontraron binarios EFI firmados en /boot/efi/EFI')
+
+# kernel modules heuristics
+lsm = os.path.join(tmp, 'lsmod.txt')
+if os.path.exists(lsm):
+    with open(lsm, 'r', errors='ignore') as f:
+        mods = f.read().lower()
+    for bad in ['hide', 'rootkit', 'rk', 'secret', 'phantom']:
+        if bad in mods:
+            add_event('kernel', 'critical', f'Indicador sospechoso en módulos: {bad}')
 
 doc = {
   "generated": datetime.datetime.utcnow().isoformat()+"Z",
