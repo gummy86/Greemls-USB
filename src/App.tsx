@@ -389,6 +389,9 @@ function App() {
                   >
                     Instrucciones para construir la ISO GREEMLS
                   </a>
+                  <div className="text-xs text-gray-400 mt-2">
+                    Tip: En la ISO, usa <code className="text-green-400">greemls-update-locked</code> para actualizar firmas con red bloqueada.
+                  </div>
                 </div>
               </div>
             </div>

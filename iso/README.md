@@ -36,6 +36,13 @@ make build
 3. Arranca desde el USB y ejecuta `greemls-scan`
 4. Exporta reportes con `greemls-export` y analízalos en la PWA
 
+### Actualización segura (network-locked)
+Para actualizar firmas minimizando exposición de red:
+```
+sudo greemls-update-locked
+```
+Este comando levanta un firewall nftables con allowlist mínima (DNS y rangos HTTP predefinidos), actualiza ClamAV/rkhunter y luego restablece el firewall.
+
 ## Notas de seguridad
 - Montajes en modo lectura (recomendado) para preservar evidencias
 - Actualización de firmas de ClamAV si hay red (offline-first)

@@ -56,4 +56,5 @@ xfce4-terminal
 lightdm
 network-manager
 network-manager-gnome
+nftables
 
