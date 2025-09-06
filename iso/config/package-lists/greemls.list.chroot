@@ -1,0 +1,60 @@
+linux-image-amd64
+live-boot
+systemd-sysv
+sudo
+vim-tiny
+less
+curl
+wget
+ca-certificates
+git
+
+# Filesystems & storage
+lvm2
+mdadm
+parted
+gdisk
+ntfs-3g
+exfatprogs
+e2fsprogs
+dosfstools
+util-linux
+smartmontools
+hdparm
+nvme-cli
+gparted
+
+# Forensics & recovery
+testdisk
+photorec
+sleuthkit
+foremost
+hashdeep
+dcfldd
+ddrescue
+chntpw
+
+# Security / AV
+clamav
+clamav-freshclam
+rkhunter
+chkrootkit
+yara
+
+# Network tools
+net-tools
+iproute2
+openssh-client
+nmap
+tcpdump
+curl
+wget
+
+# UI minimal (optional)
+xfce4
+xfce4-terminal
+lightdm
+network-manager
+network-manager-gnome
+nftables
+

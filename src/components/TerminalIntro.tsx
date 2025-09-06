@@ -1,34 +1,65 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Terminal, SkipForward } from 'lucide-react';
 
 interface TerminalIntroProps {
   onComplete: () => void;
-  userPlan: 'free' | 'premium' | 'premium-plus';
 }
 
-export const TerminalIntro: React.FC<TerminalIntroProps> = ({ onComplete, userPlan }) => {
+export const TerminalIntro: React.FC<TerminalIntroProps> = ({ onComplete }) => {
   const [currentLine, setCurrentLine] = useState(0);
   const [currentChar, setCurrentChar] = useState(0);
   const [displayedText, setDisplayedText] = useState<string[]>([]);
   const [showCursor, setShowCursor] = useState(true);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const terminalLines = [
     "GREEMLS v1.0.0 - The Human Immunity System",
     "Developed by César Sánchez - Antivirus Humano",
     "═══════════════════════════════════════════════════════════════",
     "",
-    "INSTRUCCIONES DE USO:",
+    "INSTRUCCIONES DE USO (RESCUE):",
     "",
-    "1. PREPARACIÓN:",
-    "   • Conecta tu USB a la máquina infectada",
-    "   • Reinicia y bootea desde USB (F12/F2/DEL en BIOS)",
-    "   • Selecciona 'GREEMLS Boot Menu'",
+    "1) CONSTRUCCIÓN DE ISO:",
+    "   • En otra PC: abre https://tuapp/ (esta PWA)",
+    "   • Sigue: Create Bootable USB → 'Instrucciones para construir la ISO'",
+    "   • En consola: cd iso && make build (requiere Docker)",
     "",
-    "2. COMANDOS PRINCIPALES:",
+    "2) PREPARACIÓN USB:",
+    "   • Usa Ventoy/Rufus y copia greemls.iso al USB",
+    "   • Verifica SHA256 de la ISO antes de usar",
+    "",
+    "3) ARRANQUE Y ESCANEO:",
+    "   • Arranca desde el USB y abre GREEMLS",
+    "   • Ejecuta: greemls-scan (solo lectura, logging RAM)",
+    "   • Exporta: greemls-export (reportes al USB)",
+    "",
+    "COMANDOS PRINCIPALES:",
     "   greemls-scan     → Escaneo forense completo (solo lectura)",
     "   greemls-clean    → Limpieza agresiva de rootkits/bootkits",
     "   greemls-status   → Estado del sistema y amenazas detectadas",
     "   greemls-export   → Exportar logs forenses a USB",
+    "",
+    "COMANDOS GREEMLS (DETALLADOS):",
+    "   greemls-scan --quick            → Escaneo rápido de indicadores",
+    "   greemls-scan --full             → Escaneo profundo con YARA",
+    "   greemls-scan --yara /media/USB/YARA  → Usar reglas YARA del USB",
+    "   greemls-clean --quarantine      → Mover hallazgos a cuarentena",
+    "   greemls-export                  → Exporta reportes a /media/USB/greemls-reports",
+    "   greemls-update-locked           → Actualiza firmas con red bloqueada (allowlist)",
+    "   greemls-status                  → Resumen de motor/firmas/últimos eventos",
+    "   greemls-help                    → Ayuda y ejemplos",
+    "",
+    "EJEMPLOS DE SALIDA:",
+    "   $ greemls-scan --quick",
+    "   [rkhunter] Posibles hallazgos: 2",
+    "   [clamav]   Malware detectado: /media/sda1/mal.bin",
+    "",
+    "   $ greemls-update-locked",
+    "   Firewall allowlist ACTIVO → freshclam → rkhunter --update → RESTAURA",
+    "",
+    "Documentación:",
+    "   /opt/greemls/docs/README.txt",
+    "   /opt/greemls/yara (reglas base) | /media/USB/YARA (custom)",
     "",
     "3. CONSEJOS DEL ANTIVIRUS HUMANO:",
     "   • 'No te alarmes' - Mantén la calma para pensar claro",
@@ -36,15 +67,10 @@ export const TerminalIntro: React.FC<TerminalIntroProps> = ({ onComplete, userPl
     "   • 'Revisa tu teléfono celular' - El malware es multiplataforma",
     "   • 'Donde pones contraseña, nunca la pongas doble vez'",
     "",
-    userPlan === 'free' ? "PLAN ACTUAL: GRATIS (Funciones básicas)" : 
-    userPlan === 'premium' ? "PLAN ACTUAL: PREMIUM (Kernel hardened + BusyBox)" :
-    "PLAN ACTUAL: PREMIUM PLUS (RAM logging + Forense completo)",
-    "",
-    userPlan === 'free' ? "UPGRADE DISPONIBLE:" : "FUNCIONES PREMIUM ACTIVAS:",
-    userPlan === 'free' ? "• Premium ($29/mes): Kernel hardened, scripts offline" : "• Kernel Linux hardened activado",
-    userPlan === 'free' ? "• Premium Plus ($59/mes): RAM logging, soporte 24/7" : "• BusyBox tools disponibles",
-    userPlan === 'premium-plus' ? "• RAM-only logging activo" : "",
-    userPlan === 'premium-plus' ? "• Modo forense completo" : "",
+    "MENSAJE FINAL:",
+    "   Nunca juegues con la seguridad de tu sistema",
+    "   porque afecta a ti y todo tu entorno y familia.",
+    "   — César Sánchez \"Kashtaman\"",
     "",
     "Presiona ENTER para continuar o ESC para salir...",
     ""
@@ -56,6 +82,13 @@ export const TerminalIntro: React.FC<TerminalIntroProps> = ({ onComplete, userPl
     }, 500);
 
     return () => clearInterval(cursorTimer);
+  }, []);
+
+  useEffect(() => {
+    // Auto focus to capture keyboard events immediately
+    if (containerRef.current) {
+      containerRef.current.focus();
+    }
   }, []);
 
   useEffect(() => {
@@ -84,7 +117,7 @@ export const TerminalIntro: React.FC<TerminalIntroProps> = ({ onComplete, userPl
     }
   };
 
-  const canSkip = userPlan !== 'free';
+  const canSkip = true;
 
   return (
     <div 
@@ -92,6 +125,7 @@ export const TerminalIntro: React.FC<TerminalIntroProps> = ({ onComplete, userPl
       onKeyDown={handleKeyPress}
       tabIndex={0}
       style={{ fontFamily: 'Consolas, Monaco, "Courier New", monospace' }}
+      ref={containerRef}
     >
       {/* Terminal Header */}
       <div className="flex items-center justify-between p-4 bg-gray-900 border-b border-green-400/30">
@@ -105,7 +139,7 @@ export const TerminalIntro: React.FC<TerminalIntroProps> = ({ onComplete, userPl
             className="flex items-center gap-2 px-3 py-1 bg-green-400/20 hover:bg-green-400/30 border border-green-400/50 rounded text-green-400 text-sm transition-all duration-300"
           >
             <SkipForward className="w-3 h-3" />
-            Skip (Premium)
+            Skip
           </button>
         )}
       </div>
@@ -165,11 +199,7 @@ export const TerminalIntro: React.FC<TerminalIntroProps> = ({ onComplete, userPl
               <p className="text-gray-300 text-sm mb-2">
                 Presiona ENTER para acceder a la interfaz gráfica de GREEMLS
               </p>
-              {!canSkip && (
-                <p className="text-yellow-400 text-xs">
-                  💡 Upgrade a Premium para saltar esta intro en el futuro
-                </p>
-              )}
+              
             </div>
           )}
         </div>
@@ -179,7 +209,6 @@ export const TerminalIntro: React.FC<TerminalIntroProps> = ({ onComplete, userPl
       <div className="p-2 bg-gray-900 border-t border-green-400/30 text-center">
         <span className="text-gray-500 text-xs">
           GREEMLS Terminal - Presiona ENTER para continuar | ESC para salir
-          {canSkip && " | Premium: Puedes saltar esta intro"}
         </span>
       </div>
     </div>

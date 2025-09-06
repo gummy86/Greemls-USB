@@ -1,0 +1,15 @@
+#!/bin/bash
+set -euo pipefail
+
+lb config \
+  --mode debian \
+  --distribution bookworm \
+  --architectures amd64 \
+  --binary-images iso-hybrid \
+  --debian-installer live \
+  --apt-indices false \
+  --mirror-bootstrap http://deb.debian.org/debian \
+  --mirror-binary http://deb.debian.org/debian \
+  --bootappend-live "boot=live components quiet splash noeject toram persistence" \
+  --binary-filesystem fat32
+

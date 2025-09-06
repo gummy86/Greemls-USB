@@ -1,0 +1,167 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+LOG_DIR="/var/log/greemls"
+mkdir -p "$LOG_DIR"
+TS=$(date -Iseconds)
+OUT_JSON="$LOG_DIR/scan_${TS}.json"
+OUT_HTML="$LOG_DIR/scan_${TS}.html"
+
+echo "[+] GREEMLS scan started $TS" >&2
+
+# Ensure mounts are read-only by default
+mount | grep -E ' /(mnt|media)/' >/dev/null 2>&1 || true
+
+# Update definitions if network is available
+if ping -c1 -W1 1.1.1.1 >/dev/null 2>&1; then
+  freshclam || true
+fi
+
+TMPDIR=$(mktemp -d)
+trap 'rm -rf "$TMPDIR"' EXIT
+
+RESULT_JSON=$(cat <<'JSON'
+{
+  "generated": "__TS__",
+  "engine": {
+    "clamav": "enabled",
+    "rkhunter": "enabled",
+    "chkrootkit": "enabled",
+    "yara": "enabled",
+    "mbr_efi": "enabled",
+    "kernel_modules": "enabled"
+  },
+  "events": []
+}
+JSON
+)
+
+# Run rkhunter
+if command -v rkhunter >/dev/null 2>&1; then
+  rkhunter --update || true
+  rkhunter --check --sk --nocolors > "$TMPDIR/rkhunter.txt" 2>&1 || true
+fi
+
+# Run chkrootkit
+if command -v chkrootkit >/dev/null 2>&1; then
+  chkrootkit > "$TMPDIR/chkrootkit.txt" 2>&1 || true
+fi
+
+# YARA scan (if rules present)
+YARA_DIR="/opt/greemls/yara"
+USB_YARA_DIR=$(find /media -maxdepth 2 -type d -iname YARA 2>/dev/null | head -n1 || true)
+if [[ -d "$USB_YARA_DIR" ]]; then
+  YARA_DIR="$USB_YARA_DIR"
+fi
+if command -v yara >/dev/null 2>&1 && [[ -d "$YARA_DIR" ]]; then
+  find / -xdev -type f -size -20M 2>/dev/null | head -n 5000 > "$TMPDIR/filelist.txt" || true
+  xargs -a "$TMPDIR/filelist.txt" -r -n 1000 sh -c 'yara -p 4 -f -r "$0" "$@"' "$YARA_DIR" 2>/dev/null | tee "$TMPDIR/yara.txt" || true
+fi
+
+# MBR/EFI checks (basic heuristics)
+dd if=/dev/sda bs=512 count=1 2>/dev/null | hexdump -C > "$TMPDIR/mbr.hex" || true
+if [[ -d /boot/efi/EFI ]]; then
+  find /boot/efi/EFI -type f -maxdepth 2 -iname "*.efi" -print0 | xargs -0 sha256sum > "$TMPDIR/efi.sha256" || true
+fi
+
+# Kernel modules
+lsmod > "$TMPDIR/lsmod.txt" || true
+modprobe -c > "$TMPDIR/modprobe.conf" 2>/dev/null || true
+
+# Run ClamAV quick scan on mounted volumes
+if command -v clamscan >/dev/null 2>&1; then
+  clamscan -r --infected --copy="$TMPDIR/quarantine" /media /mnt 2>/dev/null | tee "$TMPDIR/clamav.txt" || true
+fi
+
+# Aggregate basic findings
+python3 - "$TMPDIR" "$OUT_JSON" <<'PY'
+import json, os, sys, datetime, re
+tmp, out = sys.argv[1], sys.argv[2]
+events = []
+def add_event(source, severity, description, details=None):
+    events.append({
+        "id": str(len(events)+1),
+        "timestamp": datetime.datetime.utcnow().isoformat()+"Z",
+        "type": "scan",
+        "severity": severity,
+        "source": source,
+        "description": description,
+        "details": details or {},
+        "evidence": []
+    })
+
+# rkhunter
+rk = os.path.join(tmp, 'rkhunter.txt')
+if os.path.exists(rk):
+    with open(rk, 'r', errors='ignore') as f:
+        text = f.read()
+    sus = [line for line in text.splitlines() if 'Warning' in line or 'Rootkit' in line]
+    if sus:
+        add_event('rkhunter', 'high', f'Posibles hallazgos: {len(sus)}', {"lines": min(30, len(sus))})
+
+# chkrootkit
+ck = os.path.join(tmp, 'chkrootkit.txt')
+if os.path.exists(ck):
+    with open(ck, 'r', errors='ignore') as f:
+        text = f.read()
+    if 'INFECTED' in text or 'suspicious' in text.lower():
+        add_event('chkrootkit', 'high', 'Indicadores sospechosos en chkrootkit')
+
+# clamav
+cl = os.path.join(tmp, 'clamav.txt')
+if os.path.exists(cl):
+    with open(cl, 'r', errors='ignore') as f:
+        for line in f:
+            if line.strip().endswith('FOUND'):
+                path = line.split(':',1)[0]
+                add_event('clamav', 'critical', 'Malware detectado', {"location": path})
+
+# yara
+yr = os.path.join(tmp, 'yara.txt')
+if os.path.exists(yr):
+    with open(yr, 'r', errors='ignore') as f:
+        c = 0
+        for _ in f:
+            c += 1
+        if c:
+            add_event('yara', 'high', f'Reglas YARA coincidencias: {c}', {"matches": c})
+
+# mbr
+mbr = os.path.join(tmp, 'mbr.hex')
+if os.path.exists(mbr):
+    with open(mbr, 'r', errors='ignore') as f:
+        hexdata = f.read()
+    if '55 aa' not in hexdata.lower():
+        add_event('mbr', 'high', 'MBR sin firma boot 0x55AA')
+
+# efi hashes presence
+efi = os.path.join(tmp, 'efi.sha256')
+if os.path.exists(efi):
+    with open(efi, 'r', errors='ignore') as f:
+        lines = [l for l in f if l.strip()]
+    if not lines:
+        add_event('efi', 'medium', 'No se encontraron binarios EFI firmados en /boot/efi/EFI')
+
+# kernel modules heuristics
+lsm = os.path.join(tmp, 'lsmod.txt')
+if os.path.exists(lsm):
+    with open(lsm, 'r', errors='ignore') as f:
+        mods = f.read().lower()
+    for bad in ['hide', 'rootkit', 'rk', 'secret', 'phantom']:
+        if bad in mods:
+            add_event('kernel', 'critical', f'Indicador sospechoso en módulos: {bad}')
+
+doc = {
+  "generated": datetime.datetime.utcnow().isoformat()+"Z",
+  "engine": {"clamav":"enabled","rkhunter":"enabled","chkrootkit":"enabled","yara":"enabled"},
+  "events": events
+}
+with open(out, 'w') as f:
+    json.dump(doc, f, indent=2)
+print(out)
+PY
+
+cp "$OUT_JSON" "$OUT_HTML" 2>/dev/null || true
+echo "[+] Reporte JSON: $OUT_JSON"
+echo "[+] GREEMLS scan finished" >&2
+

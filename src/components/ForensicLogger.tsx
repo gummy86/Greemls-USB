@@ -3,7 +3,6 @@ import {
   FileText, 
   Download, 
   Search, 
-  Filter, 
   AlertTriangle, 
   Shield, 
   Clock, 
@@ -41,6 +40,7 @@ export const ForensicLogger: React.FC<ForensicLoggerProps> = ({ isVisible, onClo
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<string>('all');
   const [filterSeverity, setFilterSeverity] = useState<string>('all');
+  const [importError, setImportError] = useState<string>('');
 
   // Simulated forensic logs
   useEffect(() => {
@@ -161,6 +161,36 @@ export const ForensicLogger: React.FC<ForensicLoggerProps> = ({ isVisible, onClo
     URL.revokeObjectURL(url);
   };
 
+  const importForensicReport = async (file: File) => {
+    try {
+      setImportError('');
+      const text = await file.text();
+      // Try JSON first
+      const parsed = JSON.parse(text);
+      if (Array.isArray(parsed.logs) || Array.isArray(parsed.events)) {
+        const items = (parsed.logs || parsed.events) as ForensicLog[];
+        setLogs(items);
+        setFilteredLogs(items);
+        return;
+      }
+      // If HTML, extract JSON from <script type="application/json"> if present
+      if (text.includes('<html')) {
+        const match = text.match(/<script[^>]*type=["']application\/json["'][^>]*>([\s\S]*?)<\/script>/i);
+        if (match && match[1]) {
+          const embedded = JSON.parse(match[1]);
+          const items = (embedded.logs || embedded.events) as ForensicLog[];
+          setLogs(items);
+          setFilteredLogs(items);
+          return;
+        }
+      }
+      throw new Error('Formato no reconocido');
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Error al importar reporte';
+      setImportError(message);
+    }
+  };
+
   if (!isVisible) return null;
 
   return (
@@ -186,6 +216,19 @@ export const ForensicLogger: React.FC<ForensicLoggerProps> = ({ isVisible, onClo
                 <Download className="w-4 h-4" />
                 Exportar Reporte
               </button>
+              <label className="flex items-center gap-2 px-4 py-2 bg-gray-800/70 border border-gray-600/50 text-gray-200 rounded-lg cursor-pointer hover:border-green-400/50 transition-all">
+                <Upload className="w-4 h-4 text-green-400" />
+                Importar Reporte
+                <input
+                  type="file"
+                  accept="application/json,text/html"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) importForensicReport(f);
+                  }}
+                />
+              </label>
               <button
                 onClick={onClose}
                 className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-all duration-300"
@@ -231,6 +274,9 @@ export const ForensicLogger: React.FC<ForensicLoggerProps> = ({ isVisible, onClo
               <option value="low">Bajo</option>
             </select>
           </div>
+          {importError && (
+            <div className="mt-3 text-red-400 text-xs">{importError}</div>
+          )}
         </div>
 
         {/* Logs List */}

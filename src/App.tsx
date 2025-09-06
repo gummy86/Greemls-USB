@@ -16,14 +16,13 @@ import {
   FileCheck,
   Image,
   Trash2,
-  RotateCcw,
   Wrench,
   Database,
   Eye,
   RefreshCw,
-  Archive,
-  Video
+  Archive
 } from 'lucide-react';
+import { ISOHashVerifier } from './components/ISOHashVerifier';
 
 interface USBDevice {
   id: string;
@@ -43,6 +42,7 @@ function App() {
   const [progress, setProgress] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentOperation, setCurrentOperation] = useState('');
+  
 
   const [devices] = useState<USBDevice[]>([
     { id: '1', name: 'Kingston DataTraveler', capacity: '32 GB', status: 'connected', health: 98, fileSystem: 'FAT32' },
@@ -76,6 +76,15 @@ function App() {
     setShowTerminalIntro(false);
   };
 
+  // Handle manifest shortcuts (query params)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get('tab');
+    const open = params.get('open');
+    if (tab) setActiveTab(tab);
+    if (open === 'logs') setShowForensicLogger(true);
+  }, []);
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'connected': return 'text-green-400';
@@ -98,7 +107,7 @@ function App() {
 
   return (
     <>
-      {showTerminalIntro && <TerminalIntro onComplete={handleTerminalIntroComplete} userPlan={userPlan} />}
+      {showTerminalIntro && <TerminalIntro onComplete={handleTerminalIntroComplete} />}
       <ForensicLogger isVisible={showForensicLogger} onClose={() => setShowForensicLogger(false)} />
       
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black text-white">
@@ -265,6 +274,48 @@ function App() {
 
           {activeTab === 'bootable' && (
             <div className="space-y-6">
+              {/* GREEMLS Rescue ISO & Ventoy Guide */}
+              <div className="bg-gradient-to-br from-black/40 to-gray-900/40 rounded-2xl p-6 border border-green-400/20"
+                   style={{ boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05)' }}>
+                <h3 className="text-xl font-bold text-green-400 mb-4 flex items-center gap-2">
+                  <Download className="w-5 h-5" />
+                  GREEMLS Rescue ISO
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="md:col-span-2 space-y-3">
+                    <p className="text-gray-300 text-sm">
+                      Descarga la imagen de rescate para escanear y limpiar rootkits/bootkits fuera del sistema.
+                      Usa Ventoy o Rufus para preparar el USB de arranque.
+                    </p>
+                    <div className="flex flex-wrap gap-3">
+                      <a href="/greemls-rescue.iso" download
+                         className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-black font-semibold rounded-lg hover:from-green-400 hover:to-emerald-400 transition-all">
+                        Descargar ISO
+                      </a>
+                      <button
+                        onClick={() => navigator.clipboard.writeText('SHA256: PENDIENTE')}
+                        className="px-4 py-2 bg-gray-800/60 border border-gray-600/50 rounded-lg text-gray-200 hover:border-green-400/50 transition-all">
+                        Copiar SHA256
+                      </button>
+                      <button
+                        onClick={() => navigator.clipboard.writeText('gpg --verify greemls-rescue.iso.sig greemls-rescue.iso')}
+                        className="px-4 py-2 bg-gray-800/60 border border-gray-600/50 rounded-lg text-gray-200 hover:border-green-400/50 transition-all">
+                        Verificación GPG
+                      </button>
+                    </div>
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <h4 className="text-orange-400 font-semibold">Guía rápida Ventoy</h4>
+                    <ol className="list-decimal list-inside text-gray-300 space-y-1">
+                      <li>Instala Ventoy en tu USB</li>
+                      <li>Copia <code className="text-green-400">greemls-rescue.iso</code> al USB</li>
+                      <li>Arranca y elige GREEMLS</li>
+                    </ol>
+                    <p className="text-xs text-gray-500 mt-2">Alternativa: Rufus (UEFI/Secure Boot).</p>
+                  </div>
+                </div>
+              </div>
+
               <div className="bg-gradient-to-br from-gray-800/40 to-gray-900/40 rounded-2xl p-6 border border-green-400/20"
                    style={{ boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05)' }}>
                 <h2 className="text-2xl font-bold text-green-400 mb-6 flex items-center gap-2">
@@ -298,6 +349,11 @@ function App() {
                     </div>
                   </div>
                   <div className="space-y-4">
+                    {/* Verify ISO SHA256 */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">Verify ISO (SHA256)</label>
+                      <ISOHashVerifier />
+                    </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">Partition Scheme</label>
                       <select className="w-full px-4 py-3 bg-gray-800/50 border border-gray-600/50 rounded-lg text-white focus:border-green-400/50 focus:outline-none"
@@ -324,6 +380,16 @@ function App() {
                   >
                     {isProcessing ? 'Creating...' : 'Create Bootable USB'}
                   </button>
+                  <a
+                    href="/iso/README.md"
+                    className="ml-4 inline-flex items-center text-sm text-gray-300 underline hover:text-green-400"
+                    target="_blank" rel="noreferrer"
+                  >
+                    Instrucciones para construir la ISO GREEMLS
+                  </a>
+                  <div className="text-xs text-gray-400 mt-2">
+                    Tip: En la ISO, usa <code className="text-green-400">greemls-update-locked</code> para actualizar firmas con red bloqueada.
+                  </div>
                 </div>
               </div>
             </div>
