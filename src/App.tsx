@@ -16,13 +16,11 @@ import {
   FileCheck,
   Image,
   Trash2,
-  RotateCcw,
   Wrench,
   Database,
   Eye,
   RefreshCw,
-  Archive,
-  Video
+  Archive
 } from 'lucide-react';
 import { ISOHashVerifier } from './components/ISOHashVerifier';
 

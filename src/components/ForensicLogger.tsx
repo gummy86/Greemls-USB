@@ -3,7 +3,6 @@ import {
   FileText, 
   Download, 
   Search, 
-  Filter, 
   AlertTriangle, 
   Shield, 
   Clock, 
@@ -186,8 +185,9 @@ export const ForensicLogger: React.FC<ForensicLoggerProps> = ({ isVisible, onClo
         }
       }
       throw new Error('Formato no reconocido');
-    } catch (e: any) {
-      setImportError(e?.message || 'Error al importar reporte');
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Error al importar reporte';
+      setImportError(message);
     }
   };
 

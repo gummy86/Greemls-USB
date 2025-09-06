@@ -24,8 +24,9 @@ export const ISOHashVerifier: React.FC = () => {
     try {
       const hash = await sha256Hex(file);
       setComputedHash(hash);
-    } catch (err: any) {
-      setError(err?.message || 'No se pudo calcular SHA256');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'No se pudo calcular SHA256';
+      setError(message);
     } finally {
       setIsComputing(false);
     }
