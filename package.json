@@ -31,5 +31,9 @@
     "vite": "^5.4.2",
     "vite-plugin-pwa": "^0.20.5",
     "workbox-window": "^7.3.0"
+  },
+  "overrides": {
+    "@eslint/plugin-kit": ">=0.3.4",
+    "esbuild": ">=0.24.3"
   }
 }
